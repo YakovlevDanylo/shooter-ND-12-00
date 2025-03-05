@@ -1,3 +1,5 @@
+from random import randint
+
 from pygame import *
 
 class GameSprite(sprite.Sprite):
@@ -21,6 +23,36 @@ class Player(GameSprite):
         if keys[K_d] and self.rect.x < 630:
             self.rect.x += self.speed
 
+    def fire(self):
+        bullet = Bullet("bullet.png", self.rect.centerx, self.rect.top, 15, 20, 15)
+        bullets.add(bullet)
+class Enemy(GameSprite):
+
+     def update(self):
+        self.rect.y += self.speed
+        global lost
+        if self.rect.y >= 400:
+            lost += 1
+            self.rect.x = randint(0, 600)
+            self.rect.y = 0
+            self.speed = randint(1, 3)
+
+class Bullet(GameSprite):
+
+    def update(self):
+        self.rect.y -= self.speed
+        if self.rect.y < 0:
+            self.kill()
+
+
+lost = 0
+
+bullets = sprite.Group()
+enemies = sprite.Group()
+for i in range(5):
+    enemy = Enemy("ufo.png", randint(0, 600), 0, 80, 50, randint(1, 3))
+    enemies.add(enemy)
+
 window = display.set_mode((700, 500))
 display.set_caption("Шутер")
 
@@ -40,10 +72,20 @@ while run:
         if e.type == QUIT:
             run = False
 
+        if e.type == KEYDOWN and e.key == K_SPACE:
+            player.fire()
+
+
     window.blit(background, (0, 0))
 
     player.update(window)
     player.reset(window)
+
+    enemies.update()
+    enemies.draw(window)
+
+    bullets.update()
+    bullets.draw(window)
 
     display.update()
     clock.tick(fps)
