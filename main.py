@@ -26,6 +26,7 @@ class Player(GameSprite):
     def fire(self):
         bullet = Bullet("bullet.png", self.rect.centerx, self.rect.top, 15, 20, 15)
         bullets.add(bullet)
+
 class Enemy(GameSprite):
 
      def update(self):
@@ -65,6 +66,15 @@ mixer.init()
 mixer.music.load("space.ogg")
 mixer.music.play()
 
+font.init()
+font1 = font.Font(None, 70)
+
+win = font1.render("You Win!!!", True, (210, 215, 0))
+lose = font1.render("You Lose!!!", True, (210, 0, 0))
+
+font2 = font.Font(None, 36)
+
+score = 0
 finish = False
 run = True
 while run:
@@ -75,17 +85,42 @@ while run:
         if e.type == KEYDOWN and e.key == K_SPACE:
             player.fire()
 
+    if not finish:
+        window.blit(background, (0, 0))
 
-    window.blit(background, (0, 0))
+        text = font2.render(f"Рахунок: {score}", True, (255,255,255))
+        text_lose = font2.render(f"Пропущено: {lost}", True, (255,255,255))
+        window.blit(text, (10, 20))
+        window.blit(text_lose, (10, 50))
 
-    player.update(window)
-    player.reset(window)
+        player.update(window)
+        player.reset(window)
 
-    enemies.update()
-    enemies.draw(window)
+        enemies.update()
+        enemies.draw(window)
 
-    bullets.update()
-    bullets.draw(window)
+        bullets.update()
+        bullets.draw(window)
 
-    display.update()
-    clock.tick(fps)
+        collides = sprite.spritecollide(player, enemies, True)
+        for c in collides:
+            score += 1
+            enemy = Enemy("ufo.png", randint(0, 600), 0, 80, 50, randint(1, 3))
+            enemies.add(enemy)
+
+        collides = sprite.groupcollide(enemies, bullets, True, True)
+        for c in collides:
+            score += 1
+            enemy = Enemy("ufo.png", randint(0, 600), 0, 80, 50, randint(1, 3))
+            enemies.add(enemy)
+
+        if score >= 10:
+            finish = True
+            window.blit(win, (200, 200))
+
+        if lost >= 5:
+            finish = True
+            window.blit(lose, (200, 200))
+
+        display.update()
+        clock.tick(fps)
